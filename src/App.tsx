@@ -1,6 +1,10 @@
 import React from 'react';
 import './App.scss';
 import { PomodoroTimer } from './pomodoroTimer';
+import { Route, Switch, BrowserRouter } from 'react-router-dom';
+import { Slideshow } from './slideshow/Slideshow';
+import { SwipeRefresh } from './swipeRefresh/SwipeRefresh';
+import { getText } from './swipeRefresh/swipeRefreshService';
 
 function App() {
   return (
@@ -8,10 +12,26 @@ function App() {
       <header className="app-header">
         <h1>RxJS Examples</h1>
       </header>
-      <section className='app-section'>
-        <h2 className='title'>Component</h2>
-        <PomodoroTimer sessionLenght={25} breakLenght={5}/>
-      </section>
+      <BrowserRouter>
+        <Switch>
+          <Route path="/pomodoro">
+            <section className="app-section">
+              <h2 className="title">Component</h2>
+              <PomodoroTimer sessionLenght={25} breakLenght={5} />
+            </section>
+          </Route>
+          <Route path="/slideshow">
+            <Slideshow
+              transitionTime={500}
+              backgroundItems={['#D91136', '#F249A6', '#0FC9F2', '#66A638', '#F2C230']}
+              initialIndex={1}
+            />
+          </Route>
+          <Route path="/swipe">
+            <SwipeRefresh {...getText()} />
+          </Route>
+        </Switch>
+      </BrowserRouter>
     </main>
   );
 }
