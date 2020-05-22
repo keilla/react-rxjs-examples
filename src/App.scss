@@ -9,3 +9,12 @@
   font-size: calc(10px + 2vmin);
   color: white;
 }
+
+.app-section {
+  padding: 30px;
+  color: $blue;
+
+  & > .title {
+    margin-left: 10px;
+  }
+}

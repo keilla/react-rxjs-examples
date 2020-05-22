@@ -1,0 +1,34 @@
+@import 'src/styles/settings';
+
+.timer-panel {
+  font-size: $big;
+  display: flex;
+  justify-content: center;
+  color: $red;
+  font-weight: bold;
+
+  & > .separator {
+    line-height: 100px;
+  }
+}
+
+.timer-unit {
+
+  & > .name {
+    font-size: 12px;
+    display: block;
+    text-align: center;
+  }
+
+  & > .unit {
+    display: inline-block;
+    background-color: $red;
+    padding: $byte-space;
+    color: $white;
+    border-radius: 5px;
+  }
+
+  & + .timer-unit::before {
+    content: ':';
+  }
+}
