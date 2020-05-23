@@ -1,0 +1,44 @@
+$height: 100%;
+$width: 100vw;
+
+.slider {
+  width: width;
+  height: $height;
+  overflow: hidden;
+}
+
+.slider .wrapper {
+  height: $height;
+  transition: all linear;
+  will-change: transform;
+}
+
+.slider .btn {
+  position: fixed;
+  top: 0;
+  height: $height;
+  border: 0;
+  background: none;
+  width: 7vw;
+  cursor: pointer;
+  outline: 0;
+}
+
+.slider .btn {
+  &.prev {
+    left: 0;
+  }
+
+  &.next {
+    right: 0;
+  }
+}
+
+.slider .item {
+  width: $width;
+  height: $height;
+  float: left;
+  line-height: $height;
+  font-size: 40vh;
+  text-align: center;
+}

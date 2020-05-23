@@ -1,0 +1,19 @@
+@import './../styles/settings.scss';
+
+.swipe-refresh {
+  .refresh-message-container {
+    background: $pink;
+    color: white;
+    font-size: 0.85em;
+    font-weight: bold;
+    text-align: center;
+    overflow: hidden;
+
+    .box {
+      padding: 10px 0;
+    }
+  }
+  .content {
+    padding: 20px 35px;
+  }
+}
