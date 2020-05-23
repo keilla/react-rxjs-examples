@@ -2,9 +2,9 @@ import React from 'react';
 import './App.scss';
 import { PomodoroTimer } from './pomodoroTimer';
 import { Route, Switch, BrowserRouter } from 'react-router-dom';
-import { Slideshow } from './slideshow/Slideshow';
-import { SwipeRefresh } from './swipeRefresh/SwipeRefresh';
-import { getText } from './swipeRefresh/swipeRefreshService';
+import { Slideshow } from './Slideshow/Slideshow';
+import { SwipeRefresh } from './SwipeRefresh/SwipeRefresh';
+import { getText } from './SwipeRefresh/swipeRefreshService';
 
 function App() {
   return (
@@ -16,7 +16,6 @@ function App() {
         <Switch>
           <Route path="/pomodoro">
             <section className="app-section">
-              <h2 className="title">Component</h2>
               <PomodoroTimer sessionLength={1} breakLength={5}/>
             </section>
           </Route>
