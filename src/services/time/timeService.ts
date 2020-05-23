@@ -16,4 +16,8 @@ export class TimeService {
   addSeconds(value: number) {
     this.timeInSeconds += value;
   }
+
+  get remainingInMiliseconds() {
+    return this.timeInSeconds * 1000;
+  }
 }

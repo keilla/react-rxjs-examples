@@ -17,7 +17,7 @@ function App() {
           <Route path="/pomodoro">
             <section className="app-section">
               <h2 className="title">Component</h2>
-              <PomodoroTimer sessionLenght={25} breakLenght={5} />
+              <PomodoroTimer sessionLength={1} breakLength={5}/>
             </section>
           </Route>
           <Route path="/slideshow">

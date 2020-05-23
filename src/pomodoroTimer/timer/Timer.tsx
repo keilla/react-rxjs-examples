@@ -1,6 +1,6 @@
 import React from 'react';
 import { interval, empty } from 'rxjs';
-import { finalize, takeUntil, tap, mapTo, switchMap, scan } from 'rxjs/operators';
+import { finalize, takeUntil, tap, mapTo, switchMap } from 'rxjs/operators';
 import { TimerProps } from './timerProps';
 import './Timer.scss';
 import { TimeService } from '../../services/';
@@ -15,7 +15,7 @@ export class Timer extends React.Component<TimerProps, TimerState> {
   constructor(
     props: TimerProps,
     private timeService: TimeService,
-    private readonly intervalInMiliseconds = 1000
+    private readonly interval$ = interval(1000)
   ) {
     super(props);
     this.state = { minutes: 0, seconds: 0 };
@@ -25,19 +25,16 @@ export class Timer extends React.Component<TimerProps, TimerState> {
   componentDidMount() {
     this.setState({
       minutes: this.timeService.minutes,
-      seconds: this.timeService.seconds
+      seconds: this.timeService.seconds,
     });
 
     const { isRunning$, reset$ } = this.props;
-  
+
     reset$.pipe(mapTo(false));
 
     isRunning$.pipe(
-      switchMap(isRunning => {
-        console.log('isRunning', isRunning);
-        return isRunning ? this.start$ : empty()
-      })
-    ).subscribe((x) => console.log('x', x));
+      switchMap(isRunning => isRunning ? this.start$ : empty())
+    ).subscribe();
   }
 
   private get start$() {
@@ -47,30 +44,26 @@ export class Timer extends React.Component<TimerProps, TimerState> {
   }
 
   get timer$() {
-    const end$ = interval(this.initialMinutesToMiliseconds + this.intervalInMiliseconds);
-
-    return this.remanaingTime$.pipe(
-      takeUntil(end$),
-      tap(() => this.timeService.addSeconds(-1)),
-      finalize(() => this.props.timeout())
+    return this.interval$.pipe(
+      takeUntil(this.end$),
+      tap(() => this.timeService.addSeconds(-1))
     );
   }
 
-  get remanaingTime$() {
-    return interval(this.intervalInMiliseconds);
+  get end$() {
+    return interval(this.timeService.remainingInMiliseconds + 1000).pipe(
+      finalize(() => this.stop())
+    );
   }
 
-  get elapsedTime$() {
-    return this.remanaingTime$.pipe(scan((acc, curr) => acc + curr, 0))
-    .subscribe(val => console.log('val', val));
+  stop() {
+    if (this.timeService.remainingInMiliseconds === 0) {
+      this.props.timeout();
+    }
   }
 
   get initialMinutesToSeconds() {
     return this.props.initialMinutes * 60;
-  }
-
-  get initialMinutesToMiliseconds() {
-    return this.initialMinutesToSeconds * 1000;
   }
 
   private padStart(value: number) {
