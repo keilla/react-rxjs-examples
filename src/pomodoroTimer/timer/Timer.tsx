@@ -1,6 +1,6 @@
 import React from 'react';
 import { interval, empty } from 'rxjs';
-import { finalize, takeUntil, tap, mapTo, switchMap } from 'rxjs/operators';
+import { finalize, takeUntil, tap, switchMap } from 'rxjs/operators';
 import { TimerProps } from './timerProps';
 import './Timer.scss';
 import { TimeService } from '../../services/';
@@ -19,25 +19,27 @@ export class Timer extends React.Component<TimerProps, TimerState> {
   ) {
     super(props);
     this.state = { minutes: 0, seconds: 0 };
-    this.timeService = new TimeService(this.initialMinutesToSeconds);
   }
 
   componentDidMount() {
-    this.setState({
-      minutes: this.timeService.minutes,
-      seconds: this.timeService.seconds,
-    });
-
-    const { isRunning$, reset$ } = this.props;
-
-    reset$.pipe(mapTo(false));
-
-    isRunning$.pipe(
+    this.props.isRunning$.pipe(
       switchMap(isRunning => isRunning ? this.start$ : empty())
     ).subscribe();
   }
 
-  private get start$() {
+  componentDidUpdate(prevProps: TimerProps) {
+    if (this.props.initialMinutes !== prevProps.initialMinutes) {
+      const initialTimeToSeconds = this.props.initialMinutes * 60;
+      this.timeService = new TimeService(initialTimeToSeconds);
+
+      this.setState({
+        minutes: this.timeService.minutes,
+        seconds: this.timeService.seconds,
+      });
+    }
+  }
+
+  get start$() {
     return this.timer$.pipe(
       tap(() => this.setState({ seconds: this.timeService.seconds, minutes: this.timeService.minutes }))
     );
@@ -56,14 +58,10 @@ export class Timer extends React.Component<TimerProps, TimerState> {
     );
   }
 
-  stop() {
+  private stop() {
     if (this.timeService.remainingInMiliseconds === 0) {
       this.props.timeout();
     }
-  }
-
-  get initialMinutesToSeconds() {
-    return this.props.initialMinutes * 60;
   }
 
   private padStart(value: number) {

@@ -6,57 +6,49 @@ import { Subject } from 'rxjs';
 
 interface PomodoroTimerState {
   description: 'session' | 'break';
+  time: number
 }
 
 export class PomodoroTimer extends React.Component<PomodoroTimerProps, PomodoroTimerState> {
 
-  constructor(
-    props: PomodoroTimerProps,
-    private isRunning$: Subject<boolean>,
-    private reset$: Subject<void>,
-  ) {
+  constructor(props: PomodoroTimerProps, private isRunning$: Subject<boolean>) {
     super(props);
     this.state = {
-      description: 'session'
+      description: 'session',
+      time: 0
     }
 
     this.isRunning$ = new Subject();
-    this.reset$ = new Subject();
 
     this.start = this.start.bind(this);
-    this.stop = this.stop.bind(this);
-    this.clear = this.clear.bind(this);
+    this.pause = this.pause.bind(this);
     this.handleTimeout = this.handleTimeout.bind(this);
+  }
+
+  componentDidMount() {
+    this.setState({ time: this.props.sessionLength });
   }
 
   private start() {
     this.isRunning$.next(true);
   }
 
-  private stop() {
+  private pause() {
     this.isRunning$.next(false);
   }
-  
-  private clear() {
-    this.reset$.next();
-  }
+
 
   private handleTimeout() {
-    this.toggleSession();
-  }
-
-  private toggleSession() {
     const description = this.runningSession ? 'break' : 'session';
-    this.setState({ description, });
+
+    const { sessionLength, breakLength } = this.props;
+    const time = this.runningSession ? breakLength : sessionLength;
+
+    this.setState({ description, time });
   }
 
   get runningSession() {
     return this.state.description === 'session';
-  }
-
-  get time() {
-    const { sessionLength, breakLength } = this.props;
-    return this.runningSession ? sessionLength : breakLength;
   }
 
   render() {
@@ -64,16 +56,14 @@ export class PomodoroTimer extends React.Component<PomodoroTimerProps, PomodoroT
       <div className='pomodoro-timer'>
         <h2 className='title'>Pomodoro Timer</h2>
         <Timer
-          initialMinutes={this.time}
+          initialMinutes={this.state.time}
           timeout={this.handleTimeout}
           isRunning$={this.isRunning$.asObservable()}
-          reset$={this.reset$.asObservable()}
         />
         <p className='description'>{this.state.description}</p>
         <div className='timer-controls'>
           <button className='button' onClick={this.start}>start</button>
-          <button className='button' onClick={this.stop}>stop</button>
-          <button className='button' onClick={this.clear}>clear</button>
+          <button className='button' onClick={this.pause}>pause</button>
         </div>
       </div>
     );
