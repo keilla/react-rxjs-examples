@@ -1,6 +1,6 @@
 import React from 'react';
-import { interval } from 'rxjs';
-import { finalize, takeUntil, tap } from 'rxjs/operators';
+import { interval, empty } from 'rxjs';
+import { finalize, takeUntil, tap, mapTo, switchMap, scan } from 'rxjs/operators';
 import { TimerProps } from './timerProps';
 import './Timer.scss';
 import { TimeService } from '../../services/';
@@ -27,18 +27,42 @@ export class Timer extends React.Component<TimerProps, TimerState> {
       minutes: this.timeService.minutes,
       seconds: this.timeService.seconds
     });
-    this.start();
+
+    const { isRunning$, reset$ } = this.props;
+  
+    reset$.pipe(mapTo(false));
+
+    isRunning$.pipe(
+      switchMap(isRunning => {
+        console.log('isRunning', isRunning);
+        return isRunning ? this.start$ : empty()
+      })
+    ).subscribe((x) => console.log('x', x));
+  }
+
+  private get start$() {
+    return this.timer$.pipe(
+      tap(() => this.setState({ seconds: this.timeService.seconds, minutes: this.timeService.minutes }))
+    );
   }
 
   get timer$() {
-    const interval$ = interval(this.intervalInMiliseconds);
     const end$ = interval(this.initialMinutesToMiliseconds + this.intervalInMiliseconds);
 
-    return interval$.pipe(
+    return this.remanaingTime$.pipe(
       takeUntil(end$),
       tap(() => this.timeService.addSeconds(-1)),
-      finalize(() => console.log('Time is Up'))
+      finalize(() => this.props.timeout())
     );
+  }
+
+  get remanaingTime$() {
+    return interval(this.intervalInMiliseconds);
+  }
+
+  get elapsedTime$() {
+    return this.remanaingTime$.pipe(scan((acc, curr) => acc + curr, 0))
+    .subscribe(val => console.log('val', val));
   }
 
   get initialMinutesToSeconds() {
@@ -52,12 +76,6 @@ export class Timer extends React.Component<TimerProps, TimerState> {
   private padStart(value: number) {
     const stringValue = value.toString();
     return stringValue.padStart(2, '0')
-  }
-
-  private start() {
-    this.timer$.pipe(
-      tap(() => this.setState({ seconds: this.timeService.seconds, minutes: this.timeService.minutes }))
-    ).subscribe();
   }
 
   render() {

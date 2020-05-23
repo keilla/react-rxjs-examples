@@ -1,4 +1,4 @@
 export interface PomodoroTimerProps {
-  sessionLenght: number;
-  breakLenght: number;
+  sessionLength: number;
+  breakLength: number;
 }
