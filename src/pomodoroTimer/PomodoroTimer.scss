@@ -1,48 +1,23 @@
 @import 'src/styles/settings';
 
 .pomodoro-timer {
-  width: 300px;
   background-color: $white;
   padding: $peta-byte-space;
   box-shadow: $card-shadow;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 
   & > .title {
     color: $red;
     text-align: center;
+    font-size: 44px;
+    margin: 0;
   }
 
-  & > .description {
-    color: $red;
-    padding: $byte-space;
-    font-weight: bold;
-    font-size: 20px;
-    width: fit-content;
-    text-align: center;
-    margin: $byte-space auto;
-  }
-}
-
-.timer-controls {
-  display: flex;
-  justify-content: center;
-  flex-wrap: 100%;
-
-  & > .button {
-    background-color: $red;
-    padding: $byte-space;
-    color: $white;
-    font-weight: 500;
-    font-size: 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    box-shadow: 0px 3px 1px -2px rgba(0,0,0,0.2);
-    
-    & +.button {
-      margin-left: $nibble-space;
-    }
-
-    &:hover {
-      background-color: rgba(217, 17, 54, 1);
-    }
+  & > .timer {
+    display: flex;
+    justify-content: center;
+    margin: $giga-byte-space 0;
   }
 }

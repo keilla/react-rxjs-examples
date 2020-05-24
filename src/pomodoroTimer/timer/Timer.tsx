@@ -1,5 +1,5 @@
 import React from 'react';
-import { interval, empty } from 'rxjs';
+import { interval, empty, Subject } from 'rxjs';
 import { finalize, takeUntil, tap, switchMap } from 'rxjs/operators';
 import { TimerProps } from './timerProps';
 import './Timer.scss';
@@ -15,14 +15,17 @@ export class Timer extends React.Component<TimerProps, TimerState> {
   constructor(
     props: TimerProps,
     private timeService: TimeService,
-    private readonly interval$ = interval(1000)
+    private readonly interval$ = interval(1000),
+    private unSub$: Subject<void>
   ) {
     super(props);
     this.state = { minutes: 0, seconds: 0 };
+    this.unSub$ = new Subject();
   }
 
   componentDidMount() {
     this.props.isRunning$.pipe(
+      takeUntil(this.unSub$),
       switchMap(isRunning => isRunning ? this.start$ : empty())
     ).subscribe();
   }
@@ -67,6 +70,11 @@ export class Timer extends React.Component<TimerProps, TimerState> {
   private padStart(value: number) {
     const stringValue = value.toString();
     return stringValue.padStart(2, '0')
+  }
+
+  componentWillUnmount() {
+    this.unSub$.next();
+    this.unSub$.complete();
   }
 
   render() {

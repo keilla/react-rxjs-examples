@@ -3,18 +3,20 @@ import { Timer } from './timer';
 import './PomodoroTimer.scss';
 import { PomodoroTimerProps } from './pomodoroTimerProps';
 import { Subject } from 'rxjs';
+import { Player } from './player/Player';
 
 interface PomodoroTimerState {
-  description: 'session' | 'break';
-  time: number
+  description: 'Session' | 'Break';
+  time: number;
 }
 
 export class PomodoroTimer extends React.Component<PomodoroTimerProps, PomodoroTimerState> {
 
-  constructor(props: PomodoroTimerProps, private isRunning$: Subject<boolean>) {
+  constructor(props: PomodoroTimerProps,
+    private isRunning$: Subject<boolean>) {
     super(props);
     this.state = {
-      description: 'session',
+      description: 'Session',
       time: 0
     }
 
@@ -37,34 +39,44 @@ export class PomodoroTimer extends React.Component<PomodoroTimerProps, PomodoroT
     this.isRunning$.next(false);
   }
 
-
   private handleTimeout() {
-    const description = this.runningSession ? 'break' : 'session';
+    const description = this.runningSession ? 'Break' : 'Session';
 
     const { sessionLength, breakLength } = this.props;
     const time = this.runningSession ? breakLength : sessionLength;
 
     this.setState({ description, time });
+    this.isRunning$.next(false);
   }
 
   get runningSession() {
-    return this.state.description === 'session';
+    return this.state.description === 'Session';
+  }
+
+  get btnVisible() {
+    return 'button';
+  }
+
+  get btnHidden() {
+    return 'button -hidden';
   }
 
   render() {
     return (
       <div className='pomodoro-timer'>
-        <h2 className='title'>Pomodoro Timer</h2>
-        <Timer
-          initialMinutes={this.state.time}
-          timeout={this.handleTimeout}
-          isRunning$={this.isRunning$.asObservable()}
-        />
-        <p className='description'>{this.state.description}</p>
-        <div className='timer-controls'>
-          <button className='button' onClick={this.start}>start</button>
-          <button className='button' onClick={this.pause}>pause</button>
+        <h2 className='title'>Pomodoro {this.state.description}</h2>
+        <div className='timer'>
+          <Timer
+            initialMinutes={this.state.time}
+            timeout={this.handleTimeout}
+            isRunning$={this.isRunning$.asObservable()}
+          />
         </div>
+        <Player
+          isPlaying$={this.isRunning$.asObservable()}
+          onPlay={this.start}
+          onPause={this.pause}
+        />
       </div>
     );
   }

@@ -16,7 +16,7 @@ function App() {
         <Switch>
           <Route path="/pomodoro">
             <section className="app-section">
-              <PomodoroTimer sessionLength={1} breakLength={5}/>
+              <PomodoroTimer sessionLength={25} breakLength={5}/>
             </section>
           </Route>
           <Route path="/slideshow">
