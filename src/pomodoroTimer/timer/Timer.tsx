@@ -1,5 +1,5 @@
 import React from 'react';
-import { interval, empty, Subject } from 'rxjs';
+import { interval, empty, Subject, Observable } from 'rxjs';
 import { finalize, takeUntil, tap, switchMap } from 'rxjs/operators';
 import { TimerProps } from './timerProps';
 import './Timer.scss';
@@ -42,32 +42,32 @@ export class Timer extends React.Component<TimerProps, TimerState> {
     }
   }
 
-  get start$() {
+  get start$(): Observable<number> {
     return this.timer$.pipe(
       tap(() => this.setState({ seconds: this.timeService.seconds, minutes: this.timeService.minutes }))
     );
   }
 
-  get timer$() {
+  get timer$(): Observable<number> {
     return this.interval$.pipe(
       takeUntil(this.end$),
       tap(() => this.timeService.addSeconds(-1))
     );
   }
 
-  get end$() {
+  get end$(): Observable<number> {
     return interval(this.timeService.remainingInMiliseconds + 1000).pipe(
       finalize(() => this.stop())
     );
   }
 
-  private stop() {
+  private stop(): void {
     if (this.timeService.remainingInMiliseconds === 0) {
       this.props.timeout();
     }
   }
 
-  private padStart(value: number) {
+  private padStart(value: number): string {
     const stringValue = value.toString();
     return stringValue.padStart(2, '0')
   }

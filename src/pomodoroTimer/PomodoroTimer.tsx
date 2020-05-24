@@ -12,8 +12,7 @@ interface PomodoroTimerState {
 
 export class PomodoroTimer extends React.Component<PomodoroTimerProps, PomodoroTimerState> {
 
-  constructor(props: PomodoroTimerProps,
-    private isRunning$: Subject<boolean>) {
+  constructor(props: PomodoroTimerProps, private isRunning$: Subject<boolean>) {
     super(props);
     this.state = {
       description: 'Session',
@@ -51,14 +50,6 @@ export class PomodoroTimer extends React.Component<PomodoroTimerProps, PomodoroT
 
   get runningSession() {
     return this.state.description === 'Session';
-  }
-
-  get btnVisible() {
-    return 'button';
-  }
-
-  get btnHidden() {
-    return 'button -hidden';
   }
 
   render() {
