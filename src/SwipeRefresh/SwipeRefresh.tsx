@@ -11,7 +11,7 @@ interface Props {
 
 interface State {
   dragState: SwipeState;
-  headerHeight: number;
+  refreshMessageHeight: number;
 }
 
 const MAX_HEIGHT = 60;
@@ -29,16 +29,16 @@ function getMessage(state: string) {
 }
 
 export class SwipeRefresh extends React.Component<Props, State> {
-  private contentRef: React.RefObject<any> = React.createRef();
+  private readonly contentRef: React.RefObject<any> = React.createRef();
+  private readonly contentUpdateSubject = new Subject();
   private swipeUtils?: SwipeUtils;
   private verticalMoves$?: Subscription;
   private verticalMovesEnds$?: Subscription;
-  private contentUpdateSubject = new Subject();
   private contentUpdate$?: Subscription;
 
   constructor(props: Props) {
     super(props);
-    this.state = { headerHeight: 0, dragState: 'idle' };
+    this.state = { refreshMessageHeight: 0, dragState: 'idle' };
   }
 
   public componentDidMount() {
@@ -57,16 +57,16 @@ export class SwipeRefresh extends React.Component<Props, State> {
   }
 
   public render() {
-    const { headerHeight, dragState } = this.state;
+    const { refreshMessageHeight, dragState } = this.state;
     return (
       <div className="swipe-refresh">
-        {headerHeight > 0 ? (
+        {refreshMessageHeight > 0 ? (
           <div
             className="refresh-message-container"
-            style={{ maxHeight: MAX_HEIGHT, height: Math.max(0, headerHeight) }}>
+            style={{ maxHeight: MAX_HEIGHT, height: refreshMessageHeight }}>
             <div className="box">
-              <div className="icon">{getIcon(dragState)}</div>
-              <div className="text">{getMessage(dragState)}</div>
+              <span>{getIcon(dragState)}</span>
+              <p>{getMessage(dragState)}</p>
             </div>
           </div>
         ) : (
@@ -84,21 +84,25 @@ export class SwipeRefresh extends React.Component<Props, State> {
   private subscribeRefresher() {
     return this.contentUpdateSubject.asObservable().subscribe(() => {
       console.log('updating');
-      setTimeout(() => this.setState({ dragState: 'idle', headerHeight: 0 }), 1000);
+      setTimeout(() => this.setState({ dragState: 'idle', refreshMessageHeight: 0 }), 1000);
     });
   }
 
   private subscribeVerticalMoves() {
     return this.swipeUtils?.verticalMoves().subscribe(
       (coordinate: Coordinate) => {
-        const { dragState } = this.state;
-        if (window.pageYOffset === 0 && dragState !== 'refreshing') {
+        const { dragState, refreshMessageHeight } = this.state;
+        if (dragState !== 'refreshing') {
           this.setState({
             dragState: coordinate.y > MAX_HEIGHT ? 'can-release' : 'pull-more',
-            headerHeight: coordinate.y,
+            refreshMessageHeight: coordinate.y,
           });
 
-          this.swipeUtils?.blockSwipe();
+          if (refreshMessageHeight > 0) {
+            this.swipeUtils?.blockSwipe();
+          } else {
+            this.swipeUtils?.unblockSwipe();
+          }
         }
       },
       () => console.error('error when moving')
@@ -108,16 +112,19 @@ export class SwipeRefresh extends React.Component<Props, State> {
   private subscribeVerticalMovesEnds() {
     return this.swipeUtils?.verticalMoveEnds().subscribe(
       (coordinate: Coordinate) => {
-        const { dragState, headerHeight } = this.state;
-        if (headerHeight > MAX_HEIGHT && dragState !== 'refreshing') {
-          this.setState({
-            dragState: 'refreshing',
-          });
-          this.contentUpdateSubject.next();
-        } else {
-          this.setState({ headerHeight: 0, dragState: 'idle' });
+        const { dragState } = this.state;
+        if (dragState !== 'refreshing') {
+          if (coordinate.y > MAX_HEIGHT) {
+            this.setState({
+              dragState: 'refreshing',
+            });
+            this.contentUpdateSubject.next();
+          } else {
+            this.setState({ refreshMessageHeight: 0, dragState: 'idle' });
+          }
+
+          this.swipeUtils?.unblockSwipe();
         }
-        this.swipeUtils?.unblockSwipe();
       },
       () => console.error('error when moving ends')
     );

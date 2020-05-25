@@ -9,10 +9,9 @@ export interface Coordinate {
 }
 
 export class SwipeUtils {
-  private touchStarts$: Observable<Coordinate>;
-  private touchMoves$: Observable<Coordinate>;
+  private readonly touchStarts$: Observable<Coordinate>;
+  private readonly touchMoves$: Observable<Coordinate>;
   private readonly touchEnds$: Observable<Coordinate>;
-  private swipeBlock: boolean = false;
 
   constructor(element: Element | Window) {
     this.movesUntilEnds = this.movesUntilEnds.bind(this);
@@ -21,7 +20,10 @@ export class SwipeUtils {
     this.blockSwipe = this.blockSwipe.bind(this);
     this.unblockSwipe = this.unblockSwipe.bind(this);
 
-    this.touchStarts$ = merge(fromEvent(element, 'touchstart')).pipe(map(this.touchEventToCoordinate));
+    this.touchStarts$ = fromEvent(element, 'touchstart').pipe(
+      filter((touchEvent: any) => touchEvent.view.scrollY <= 0),
+      map(this.touchEventToCoordinate)
+    );
     this.touchMoves$ = fromEvent(element, 'touchmove').pipe(map(this.touchEventToCoordinate));
     this.touchEnds$ = merge(fromEvent(window, 'touchend'), fromEvent(window, 'touchcancel')).pipe(
       map(this.touchEventToCoordinate)
@@ -37,11 +39,11 @@ export class SwipeUtils {
   }
 
   public blockSwipe() {
-    this.swipeBlock = true;
+    document.body.style.position = 'fixed';
   }
 
   public unblockSwipe() {
-    this.swipeBlock = false;
+    document.body.style.position = 'relative';
   }
 
   private verticalMoveStarts() {
@@ -75,9 +77,6 @@ export class SwipeUtils {
   }
 
   private touchEventToCoordinate(touchEvent: any) {
-    if (touchEvent.cancelable && this.swipeBlock) {
-      touchEvent.preventDefault();
-    }
     return {
       x: touchEvent.changedTouches[0].clientX,
       y: touchEvent.changedTouches[0].clientY,
